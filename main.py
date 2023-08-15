@@ -41,7 +41,7 @@ if __name__ == "__main__":
     # Generate network
     network    = TinyCNN()
     net_params = get_parameters(network)
-    optimizer  = SGD(net_params, lr=0.001)
+    optimizer  = SGD(net_params, lr=0.0005)
 
     # Train model
     print("\nTrains a 4-layer CNN (2-conv2d, 2 linear) network (for attack purposes)")

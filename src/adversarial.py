@@ -7,10 +7,13 @@ def tensor_norm(x: Tensor, p: float):
     """Computes the p-norm of a tensor.
     """
     assert p in [2., float("inf")]
+    shape = x.shape
     if p == 2:
-        return x.abs().pow(p).reshape(x.shape[0], -1).sum(dim=1).pow(1./p)
+        norm = x.pow(2).reshape(x.shape[0], -1).sum(axis=1).sqrt().squeeze()
     elif p == float("inf"):
-        return x.max()
+        norm = x.reshape(x.shape[0], -1).max(axis=1)
+    norm = norm.reshape(norm.shape[0], *[1]*len(shape[1:]))
+    return norm
 
 class Adversarial_Buffer:
 
@@ -119,10 +122,8 @@ class Adversarial_Attack():
             perturbation = perturbations.perturbation
             update = perturbation.grad
             norm = tensor_norm(update, self.norm)
-            update = update.div(norm).mul(self.cons/self.iter)
+            update = update.div(norm).mul(self.cons/self.iter if self.norm!=2 else self.cons*0.2)
             perturbation = perturbation.add(update).realize()
-            # norm = tensor_norm(perturbation, self.norm)
-            # perturbation = perturbation.div(norm).mul(self.cons)
             # Clamps perturbation
             perturbation = X.add(perturbation).maximum(0).minimum(1).sub(X)
             # Feed update back into buffer
@@ -142,7 +143,7 @@ def attack_network(
         target_class: int = 3,
         print_example: list = None
     ):
-    """Function to test an attack on a linear network
+    """Function to test an attack on a network using first 128 elements of given set
     """
 
     X_test = Tensor(X_test[:128])
@@ -168,7 +169,7 @@ def attack_network(
     print(f"\tAdversarial test accuracy: {100 * adv_acc:.2f}% | ASR: {100 * asr:.2f}%")
 
     if print_example is not None and print_example[0]:
-        plt.imshow(inputs.numpy()[3].reshape(28, 28), cmap="gray")
+        plt.imshow(inputs.numpy()[2].reshape(28, 28), cmap="gray")
         plt.savefig(print_example[1])
 
     return None

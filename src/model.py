@@ -5,17 +5,15 @@ from tinygrad.tensor import Tensor
 
 class TinyCNN:
     def __init__(self):
-        # self.cnn1 = Conv2d(1, 32, 3)
-        # self.cnn2 = Conv2d(32, 32, 7)
-        self.l0 = Linear(784, 128, bias=True)
+        self.cnn1 = Conv2d(1, 32, 3)
+        self.cnn2 = Conv2d(32, 32, 7)
         self.l1 = Linear(128, 64, bias=True)
         self.l2 = Linear(64, 10, bias=False)
 
     def __call__(self, x):
-        # x = self.cnn1(x).relu().max_pool2d(kernel_size=(3,3))
-        # x = self.cnn2(x).relu()
+        x = self.cnn1(x).relu().max_pool2d(kernel_size=(3,3))
+        x = self.cnn2(x).relu()
         x = x.reshape(x.shape[0], -1)
-        x = self.l0(x)
         x = x.relu()
         x = self.l1(x)
         x = x.relu()
@@ -55,8 +53,8 @@ def train_model(
             preds   = np.argmax(out.softmax().numpy(), axis=-1)
             val_acc = np.sum(preds == Y_val)/len(Y_val)
             Tensor.training = True
-            print(f"\tEpoch {ep+1} | " \
-                  f"Loss: {loss.numpy()} | " \
+            print(f"\tEpoch {ep} | " \
+                  f"Loss: {loss.numpy():.2f} | " \
                   f"Train acc: {100 * accuracy:.2f}% | "\
                   f"Val. acc: {100 * val_acc:.2f}%")
     
